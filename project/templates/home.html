@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IT VISION SOLUTIONS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"/>
+  </head>
+  <body data-bs-theme="transparent">
+
+    <nav class="navbar fixed-top">
+        <div class="container-fluid">
+          <span class="navbar-brand mb-0 h1 fw-bold text-warning">IT VISION SOLUTIONS</span>
+          <div class="d-flex text-light">
+            <span id = "time" style="color: rgb(0, 136, 255);"></span>
+        </div>
+        </div>
+      </nav>
+
+    <div class="grid">
+      <form class = "form-class p-5" method="POST">
+        {% csrf_token %}
+        <div class="text-center mb-4">
+          <h5 class="mb-0 text-light mb-3"><span class="text-capitalize">{{user}}!</span> Welcome to</h5>
+          <h3 class="fw-bold text-light mb-0">IT VISI<span class="text-warning">O</span>N</h3>
+          <a class="text-decoration-none text-light" style="font-family:Arial, Helvetica, sans-serif;">S O L U T I O N S</a>
+        </div>
+
+        <div class="text-center">
+            <button class="text-dark fw-bold btn btn-warning rounded-0 button" type="Submit" id="submitBtn" disabled  data-bs-toggle="modal" data-bs-target="#exampleModal">Submit Presence</button>
+        </div>
+        <div class="text-center my-3">
+            <button class="text-dark fw-bold btn btn-warning rounded-0 btn-sm" id="btnretry" onclick="location.reload()">Retry</button>
+        </div>
+
+      </form>
+    </div>
+
+    <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5 text-warning fw-bold" id="exampleModalLabel">Info</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-light text-center">
+              Your Presence submitted successfully.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-warning btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+{% load static %}
+<style>
+  body {
+    background-image: url("{% static 'logocopy.jpeg'%}");
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+  }
+  body::after {
+    content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.884);
+      z-index: -1;
+      backdrop-filter: blur(2px);
+  }
+  .grid {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+  }
+  .form-class {
+    width: 100%;
+    max-width: 100%;
+    backdrop-filter: blur(4px);
+    border-radius: 5px;
+  }
+</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        var tame = "";
+        var locations = "";
+    
+        // Function to update time and check if both time and location are ready
+        function updateTime() {
+            var currentdate = new Date();
+            const time = document.getElementById("time");
+    
+            var date = "Date: " + currentdate.getDate() + "/"
+                    + (currentdate.getMonth()+1) + "/"
+                    + currentdate.getFullYear();
+            
+            var hours = currentdate.getHours();
+            var minutes = currentdate.getMinutes();
+            var seconds = currentdate.getSeconds();
+            var period = hours >= 12 ? "PM" : "AM";
+    
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+    
+            var datetime = date + " Time: " 
+                    + hours + ":" 
+                    + minutes + ":" 
+                    + seconds + " " + period;
+    
+            time.textContent = datetime;
+            tame = datetime;
+    
+            checkIfReady();  // Check if both time and location are ready
+        }
+    
+        // Function to get location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
+                });
+            } else {
+                console.log("Geolocation is not supported by your browser.");
+            }
+        }
+    
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            console.log("Latitude:", latitude, "Longitude:", longitude);
+    
+            const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+    
+            fetch(geocodeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const address = data.display_name;
+                    console.log("Fetched Address:", address);
+    
+                    locations = address;
+                    checkIfReady();  // Check if both time and location are ready
+                })
+                .catch(error => {
+                    console.error("Error fetching address:", error);
+                    console.log("Failed to retrieve address.");
+                });
+        }
+    
+        // Error callback for location
+        function error() {
+            console.log("Unable to retrieve location.");
+        }
+    
+        // Function to check if both time and location are available, then enable the button
+        function checkIfReady() {
+            if (tame && locations) {
+                const submitBtn = document.getElementById("submitBtn");
+                submitBtn.disabled = false;  // Enable the button when both time and location are available
+            }
+        }
+    
+        // Update time immediately and every second
+        updateTime();
+        setInterval(updateTime, 1000);
+    
+        // Fetch location on page load
+        window.onload = function() {
+            getLocation();
+        };
+    
+        // Handle form submission via AJAX
+        document.querySelector("form").addEventListener("submit", function(e) {
+            e.preventDefault();
+    
+            if (tame && locations) {
+                fetch("{% url 'home' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: `time=${tame}&location=${locations}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        console.log("Data submitted successfully:", data.message);
+                    } else {
+                        console.log("There was an error submitting the data.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error submitting data:", error);
+                });
+            } else {
+                console.log("Please wait for time and location to be updated.");
+            }
+        });
+    </script>
+
+</body>
+</html>
